@@ -1,3 +1,23 @@
-# vim backup / undo files
+# Vim backup / undo artifacts
 *~
 *.un~
+*.swp
+*.swo
+
+# WezTerm runtime state -- regenerated on launch, machine-specific
+.wezterm-state/
+*.log
+
+# Local machine overrides. Keep host-specific tweaks (font size, GPU
+# adapter, per-machine paths) here so wezterm.lua stays portable across
+# the Windows and macOS setups this config targets.
+local.lua
+
+# OS cruft
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editor directories
+.vscode/
+.idea/
