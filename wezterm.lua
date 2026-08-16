@@ -11,23 +11,36 @@ local is_macos = wezterm.target_triple:lower():find("darwin") ~= nil
 -- dark-theme alpha values composited over #000000, which is what they
 -- actually resolve to on Resend's own OLED-black ground.
 --
--- Radix step semantics: 9 is the saturated solid, 11 is the high-contrast
--- text-on-dark variant. That maps cleanly onto a terminal's normal/bright
--- ANSI rows. Pulled from resend.com CSS 2026-08-15.
+-- Step choice matters more than it looks. Radix step 9 is the SOLID FILL
+-- step -- meant to sit behind text, not be text. Radix designates 11 and 12
+-- as the text-on-dark steps. Terminal output is text on black, so 9 is the
+-- wrong rung: mapping it to the normal ANSI row dropped magenta to a 3.7
+-- contrast ratio against #000000, under the 4.5 readability floor.
+--
+-- Normal row = step 10, bright row = step 11. That yields a 6-8 / 10-13
+-- contrast spread, matching the profile of the GitHub Dark palette this
+-- replaced (5.6-10.1 / 8.3-13.7), so the two rows stay distinguishable and
+-- the change reads as hue rather than dimness.
+--
+-- Violet is the weakest at 4.6 -- inherently the darkest hue in the set.
+-- Bump it to violet_hi if magenta text reads too dim in practice.
+--
+-- Pulled from resend.com CSS 2026-08-15, dark-theme alpha scales composited
+-- over #000000.
 local resend = {
-	red = "#E3464B",
+	red = "#EB5C5D",
 	red_hi = "#FF9592",
-	green = "#2A9E66",
+	green = "#2DAA6E",
 	green_hi = "#3AD389",
-	amber = "#FFC53D",
+	amber = "#FFD60A",
 	amber_hi = "#FFCA16",
-	blue = "#0090FF",
+	blue = "#3B9EFF",
 	blue_hi = "#70B8FF",
-	violet = "#6B53CC",
+	violet = "#7A63D6",
 	violet_hi = "#BAA7FF",
-	cyan = "#009EC3",
+	cyan = "#20ACCD",
 	cyan_hi = "#4ACAE4",
-	orange = "#F66A14",
+	orange = "#FF801F",
 	orange_hi = "#FFA057",
 
 	-- Radix gray, dark. Resend's own surface ramp.
