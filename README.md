@@ -3,6 +3,9 @@
 My [WezTerm](https://wezterm.org) configuration. OLED-black, semi-transparent,
 tmux-style leader keymap, and a built-in timer system in the tab bar.
 
+Monochrome base, [Resend](https://resend.com)'s hues for anything that carries
+meaning.
+
 Cross-platform: Windows and macOS both work from this single file.
 
 ---
@@ -24,14 +27,26 @@ used here.
 
 ### 2. Install Hack Nerd Font
 
-Both `config.font` and `config.window_frame.font` reference **Hack Nerd Font**.
-Without it, WezTerm silently falls back and the powerline/timer glyphs break.
+**Required.** `config.window_frame.font` uses it outright, and `config.font`
+falls back to it for every Nerd Font and powerline glyph in the tab bar.
 
 - Download: https://github.com/ryanoasis/nerd-fonts/releases (`Hack.zip`)
 - Windows: unzip, select all `.ttf`, right-click → *Install for all users*
 - macOS: `brew install --cask font-hack-nerd-font`
 
 Verify: `wezterm ls-fonts --list-system | grep -i "Hack Nerd"`
+
+**Amazon Ember Mono (optional).** `config.font` prefers it and falls through to
+Hack when it is absent, so a fresh machine works with no extra steps. It is
+Amazon brand type and not redistributable here, so it is deliberately not a
+requirement. Install both weights if you have them:
+
+```
+wezterm ls-fonts --list-system | grep -i "Ember Mono"
+```
+
+If only one weight is installed, pin it in `config.font` or DirectWrite will
+fail to resolve the family.
 
 ### 3. Install Git for Windows (Windows only)
 
@@ -65,8 +80,10 @@ Launch WezTerm. That's the whole setup. The config hot-reloads on save
 
 ### Look
 
-- **Color scheme:** `ChatGPT` (active). Monochrome-first, hierarchy from
-  luminance rather than hue, accent `#10A37F` used in exactly one place.
+- **Color scheme:** `ChatGPT` (active). Monochrome base: backgrounds, text, and
+  cursor are pure greyscale, so hierarchy comes from luminance. Hue is reserved
+  for things that mean something — ANSI output, timer state, tab elevation — and
+  those hues come from Resend. See [Palette](#palette).
 - **Also bundled:** `Tokyo Night Blackout`. Switch by changing
   `config.color_scheme` near the top of the file.
 - **Background:** pure black `#000000` at `0.85` opacity on Windows, `0.8` plus
@@ -87,6 +104,44 @@ Tuned for battery on a laptop:
 | `webgpu_power_preference` | `LowPower` | pins the integrated GPU |
 | `front_end` | `WebGpu` | OpenGL causes a gamma/washout bug on some drivers |
 | `max_fps` | `60` | |
+
+---
+
+## Palette
+
+[resend.com](https://resend.com) is built on [Radix Colors](https://www.radix-ui.com/colors)
+and ships only the *alpha* scales, so these are the dark-theme alpha values
+composited over `#000000` — what they actually resolve to on Resend's own
+black ground.
+
+Radix step 9 is the saturated solid and step 11 the high-contrast variant. Both
+are designed to stay legible against the same dark surface, which is exactly the
+normal/bright split a terminal needs.
+
+| Role | Normal (step 9) | Bright (step 11) |
+| --- | --- | --- |
+| red | `#E3464B` | `#FF9592` |
+| green | `#2A9E66` | `#3AD389` |
+| yellow | `#FFC53D` | `#FFCA16` |
+| blue | `#0090FF` | `#70B8FF` |
+| magenta | `#6B53CC` | `#BAA7FF` |
+| cyan | `#009EC3` | `#4ACAE4` |
+
+Greys drive the surfaces: `#141517` `#191B1E` `#212629` `#3B4345` `#A1A4A5`
+`#F0F0F0`. The active tab lifts off black by `gray_3`, the same step Resend uses
+to lift a card off the page.
+
+The palette lives in one `local resend` table at the top of `wezterm.lua`.
+Nothing downstream hardcodes a hue.
+
+Timer states map to luminance rather than hue, so the bar reads at a glance:
+
+| State | Color |
+| --- | --- |
+| fired | `red_hi` — brightest, demands attention |
+| counting | `amber_hi` — mid |
+| paused | `gray_11` — recedes into the bar |
+| clock | `#6F6F6F` — ambient, never competes |
 
 ---
 
@@ -149,3 +204,16 @@ short version:
 The shell prompt itself is not part of this repo. On Windows the terminal drops
 into Git Bash with whatever `~/.bashrc` that machine has. Set that up separately
 if the prompt matters.
+
+---
+
+## Credits
+
+- [WezTerm](https://wezterm.org) by Wez Furlong
+- [Radix Colors](https://www.radix-ui.com/colors) — the palette underneath the hues
+- [Resend](https://resend.com) — the specific dark-theme steps used here
+- [Nerd Fonts](https://www.nerdfonts.com/) — Hack Nerd Font
+
+## License
+
+MIT. See [LICENSE](LICENSE).
