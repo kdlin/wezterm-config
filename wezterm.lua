@@ -4,6 +4,41 @@ local config = wezterm.config_builder()
 local is_windows = os.getenv("OS") and os.getenv("OS"):lower():find("windows")
 local is_macos = wezterm.target_triple:lower():find("darwin") ~= nil
 
+-- Resend accent palette.
+--
+-- resend.com ships Radix Colors, and only the ALPHA scales (--red-a9 and
+-- friends) make it into their bundle -- no solid scales. These are the
+-- dark-theme alpha values composited over #000000, which is what they
+-- actually resolve to on Resend's own OLED-black ground.
+--
+-- Radix step semantics: 9 is the saturated solid, 11 is the high-contrast
+-- text-on-dark variant. That maps cleanly onto a terminal's normal/bright
+-- ANSI rows. Pulled from resend.com CSS 2026-08-15.
+local resend = {
+	red = "#E3464B",
+	red_hi = "#FF9592",
+	green = "#2A9E66",
+	green_hi = "#3AD389",
+	amber = "#FFC53D",
+	amber_hi = "#FFCA16",
+	blue = "#0090FF",
+	blue_hi = "#70B8FF",
+	violet = "#6B53CC",
+	violet_hi = "#BAA7FF",
+	cyan = "#009EC3",
+	cyan_hi = "#4ACAE4",
+	orange = "#F66A14",
+	orange_hi = "#FFA057",
+
+	-- Radix gray, dark. Resend's own surface ramp.
+	gray_1 = "#141517", -- app background
+	gray_2 = "#191B1E", -- subtle surface
+	gray_3 = "#212629", -- elevated surface / hover
+	gray_6 = "#3B4345", -- border
+	gray_11 = "#A1A4A5", -- muted text
+	gray_12 = "#F0F0F0", -- primary text
+}
+
 -- Tokyo Night Blackout (Tokyo Night palette on a pure-black background)
 config.color_schemes = {
 	["Tokyo Night Blackout"] = {
@@ -44,11 +79,31 @@ config.color_schemes = {
 		cursor_border = "#D0D0D0",
 		selection_bg = "#2B2B2B", -- --border
 		selection_fg = "#FFFFFF", -- --text-primary
-		-- normal: --bg-surface, --error, --accent, --warning, then GitHub Dark
-		-- blue/purple/cyan (the doc defines no cool-hue semantics), --text-secondary
-		ansi = { "#171717", "#EF4444", "#10A37F", "#F59E0B", "#58A6FF", "#A371F7", "#39C5CF", "#D0D0D0" },
-		-- bright: --text-disabled, then keyword/class/variable/number/function/string, --text-primary
-		brights = { "#6F6F6F", "#FF7B72", "#7EE787", "#FFA657", "#79C0FF", "#D2A8FF", "#A5D6FF", "#FFFFFF" },
+		-- Hues come from Resend (Radix step 9 normal / step 11 bright); the
+		-- neutrals at each end stay ChatGPT's so the monochrome base is
+		-- untouched. Radix picks 9 and 11 to be legible on the same dark
+		-- ground, which is why the two rows stay distinguishable on OLED
+		-- black where GitHub Dark's brights used to wash together.
+		ansi = {
+			"#171717", -- black: --bg-surface
+			resend.red,
+			resend.green,
+			resend.amber,
+			resend.blue,
+			resend.violet, -- magenta slot
+			resend.cyan,
+			"#D0D0D0", -- white: --text-secondary
+		},
+		brights = {
+			"#6F6F6F", -- bright black: --text-disabled
+			resend.red_hi,
+			resend.green_hi,
+			resend.amber_hi,
+			resend.blue_hi,
+			resend.violet_hi,
+			resend.cyan_hi,
+			"#FFFFFF", -- bright white: --text-primary
+		},
 		tab_bar = {
 			background = "#000000", -- --bg-primary
 			active_tab = { bg_color = "#171717", fg_color = "#FFFFFF" }, -- --bg-surface elevation
