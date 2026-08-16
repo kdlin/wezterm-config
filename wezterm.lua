@@ -104,13 +104,17 @@ config.color_schemes = {
 			resend.cyan_hi,
 			"#FFFFFF", -- bright white: --text-primary
 		},
+		-- Tab bar rides Resend's grey ramp instead of hand-picked greys.
+		-- gray_3 is their elevated-surface step and gray_2 their hover, so
+		-- the active tab lifts off pure black by the same amount their UI
+		-- lifts a card off the page.
 		tab_bar = {
-			background = "#000000", -- --bg-primary
-			active_tab = { bg_color = "#171717", fg_color = "#FFFFFF" }, -- --bg-surface elevation
-			inactive_tab = { bg_color = "#000000", fg_color = "#6F6F6F" }, -- --text-disabled
-			inactive_tab_hover = { bg_color = "#222222", fg_color = "#D0D0D0" }, -- --bg-hover
+			background = "#000000",
+			active_tab = { bg_color = resend.gray_3, fg_color = resend.gray_12 },
+			inactive_tab = { bg_color = "#000000", fg_color = "#6F6F6F" },
+			inactive_tab_hover = { bg_color = resend.gray_2, fg_color = resend.gray_11 },
 			new_tab = { bg_color = "#000000", fg_color = "#6F6F6F" },
-			new_tab_hover = { bg_color = "#222222", fg_color = "#D0D0D0" },
+			new_tab_hover = { bg_color = resend.gray_2, fg_color = resend.gray_11 },
 		},
 	},
 }
@@ -345,23 +349,28 @@ wezterm.on("update-right-status", function(window, _pane)
 	for _, t in ipairs(timers) do
 		local remaining = time_left(t, now)
 		local text, color
-		-- status colors track the ChatGPT semantic tokens: --error when a timer
-		-- fires, --text-muted while paused (recedes), --warning while counting.
+		-- Three states, three luminance levels, so the timer reads at a
+		-- glance without being parsed: fired is the brightest and warmest,
+		-- counting sits mid, paused drops to muted grey and recedes into
+		-- the bar. Bright (step 11) rather than solid (step 9) because this
+		-- is small text on black, where step 9 is too dim to catch the eye.
 		if not t.paused and remaining <= 0 then
 			text = (t.label or "Timer") .. " done!"
-			color = "#EF4444"
+			color = resend.red_hi
 		elseif t.paused then
 			text = format_remaining(remaining) .. (t.label and (" " .. t.label) or "") .. " ⏸"
-			color = "#A0A0A0"
+			color = resend.gray_11
 		else
 			text = format_remaining(remaining) .. (t.label and (" " .. t.label) or "")
-			color = "#F59E0B"
+			color = resend.amber_hi
 		end
 		table.insert(segments, { Foreground = { Color = color } })
 		table.insert(segments, { Text = "⏱ " .. text .. "  " })
 	end
 
-	table.insert(segments, { Foreground = { Color = "#6F6F6F" } }) -- --text-disabled
+	-- Clock is ambient, not information you act on, so it stays the dimmest
+	-- thing in the bar and never competes with an active timer.
+	table.insert(segments, { Foreground = { Color = "#6F6F6F" } })
 	table.insert(segments, { Text = wezterm.strftime("%Y-%m-%d %H:%M ") })
 
 	window:set_right_status(wezterm.format(segments))
