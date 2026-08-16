@@ -86,7 +86,14 @@ config.animation_fps = 1
 -- Default already prefers the low-power adapter, but pin it so a future
 -- WezTerm default change cannot silently move this to the discrete GPU.
 config.webgpu_power_preference = "LowPower"
-config.font = wezterm.font("Hack Nerd Font", { weight = "Medium" })
+-- Both Regular and Bold of Amazon Ember Mono are installed (per-user, in
+-- %LOCALAPPDATA%\Microsoft\Windows\Fonts), so no weight pin is needed and bold
+-- text actually renders bold. Hack Nerd Font stays as fallback: Ember Mono has
+-- no Nerd Font/powerline glyphs, which the statusline needs.
+config.font = wezterm.font_with_fallback({
+	"Amazon Ember Mono",
+	"Hack Nerd Font",
+})
 
 -- NOTE: OpenGL was tried here to fix a flicker issue, but it caused a worse
 -- problem -- washed-out/grayscale color rendering, a known OpenGL gamma bug
